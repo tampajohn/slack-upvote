@@ -101,5 +101,5 @@ func main () {
     negroni.NewStatic(http.Dir("public")),
     negroni.Wrap(router),
   )
-  n.Run(":3000")
+  n.Run(":"+os.Getenv("PORT"))
 }
