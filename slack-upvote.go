@@ -43,6 +43,7 @@ func getSession () *mgo.Session {
 }
 func UpDownHandler(rw http.ResponseWriter, r *http.Request) {
   isCmd := len(r.PostForm["command"]) > 0
+  isTrg := len(r.PostForm["trigger_word"]) > 0
 
   r.ParseMultipartForm(5120)
   for k,v := range r.PostForm {
@@ -50,7 +51,7 @@ func UpDownHandler(rw http.ResponseWriter, r *http.Request) {
   }
   db := getSession().DB("slack-upvote")
   mentionId := r.PostForm["text"][0]
-  if !isCmd {
+  if isTrg {
     mentionId = strings.Trim(mentionId, r.PostForm["trigger_word"][0])
   }
   m := Mention{
@@ -67,7 +68,7 @@ func UpDownHandler(rw http.ResponseWriter, r *http.Request) {
       rw.Write([]byte("Egad, how did you get here?!"))
       return
     }
-  } else if len(r.PostForm["trigger_word"]) > 0 {
+  } else if isTrg {
     trg := r.PostForm["trigger_word"][0]
     if trg == "+" {
       m.Votes++
