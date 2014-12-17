@@ -45,21 +45,22 @@ func UpDownHandler(rw http.ResponseWriter, r *http.Request) {
   r.ParseMultipartForm(5120)
   isCmd := len(r.PostForm["command"]) > 0
   isTrg := len(r.PostForm["trigger_word"]) > 0
-
-  for k,v := range r.PostForm {
-    fmt.Printf("%s: %s ", k,v[0])
-  }
   db := getSession().DB("slack-upvote")
   mentionId := r.PostForm["text"][0]
+  sfx := ""
+
   if isTrg {
     mentionId = strings.Trim(mentionId, r.PostForm["trigger_word"][0])
   }
   m := Mention{
     Id: mentionId,
   }
+
   db.C("mentions").FindId(m.Id).One(&m)
+
   if isCmd {
     cmd := r.PostForm["command"][0]
+
     if cmd == "/up" {
       m.Votes++
     } else if cmd == "/down" {
@@ -77,7 +78,7 @@ func UpDownHandler(rw http.ResponseWriter, r *http.Request) {
     }
   }
   db.C("mentions").UpsertId(m.Id, m)
-  sfx := ""
+
   if m.Votes > 1 || m.Votes < -1 || m.Votes == 0 {
     sfx = "s"
   }
