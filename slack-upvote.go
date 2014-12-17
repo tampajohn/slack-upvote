@@ -1,36 +1,20 @@
 package main
 
 import (
+  "bitbucket.org/tampajohn/gadget-arm/session"
   "fmt"
   "github.com/codegangsta/negroni"
-  "gopkg.in/mgo.v2"
   "gopkg.in/mgo.v2/bson"
   "net/http"
-  "os"
   "strings"
+  "os"
 )
 type Mention struct {
   Id string `bson:"_id"`
   TeamId string `bson:"team_id"`
   Votes int64 `bson:"votes"`
 }
-func check(err error) {
-  if err != nil {
-    panic(err)
-  }
-}
-var (
-  mgoSession *mgo.Session
-)
-func getSession () *mgo.Session {
-  if mgoSession == nil {
-    cs := os.Getenv("SLACKVOTE_DB")
-    var err error
-    mgoSession, err = mgo.Dial(cs)
-    check(err)
-  }
-  return mgoSession.Clone()
-}
+
 func VoteHandler(rw http.ResponseWriter, r *http.Request) {
   r.ParseMultipartForm(5120)
   isValid := len(r.PostForm["text"]) > 0 && len(r.PostForm["team_id"]) > 0
@@ -40,7 +24,7 @@ func VoteHandler(rw http.ResponseWriter, r *http.Request) {
   }
   isCmd := len(r.PostForm["command"]) > 0
   isTrg := len(r.PostForm["trigger_word"]) > 0
-  db := getSession().DB("slack-upvote")
+  db := session.Get("SLACKVOTE_DB").DB("slack-upvote")
   mentionId := r.PostForm["text"][0]
   teamId := r.PostForm["team_id"][0]
   sfx := ""
