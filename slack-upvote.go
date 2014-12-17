@@ -46,7 +46,7 @@ func VoteHandler(rw http.ResponseWriter, r *http.Request) {
   sfx := ""
 
   if isTrg {
-    mentionId = strings.Trim(mentionId, r.PostForm["trigger_word"][0] + " ")
+    mentionId = strings.Trim(strings.TrimLeft(mentionId, r.PostForm["trigger_word"][0]), " '\"")
     if mentionId == "" {
       rw.Write([]byte(""))
       return
