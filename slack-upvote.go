@@ -1,13 +1,11 @@
 package main
 
 import (
-  "github.com/codegangsta/negroni"
-  "github.com/gorilla/mux"
-  "os"
   "fmt"
-  "net/http"
+  "github.com/codegangsta/negroni"
   "gopkg.in/mgo.v2"
-  _"gopkg.in/mgo.v2/bson"
+  "net/http"
+  "os"
   "strings"
 )
 type Team struct {
@@ -25,7 +23,9 @@ type Mention struct {
   Votes int64 `bson:"votes"`
 }
 func check(err error) {
-  panic(err)
+  if err != nil {
+    panic(err)
+  }
 }
 var (
   mgoSession *mgo.Session
@@ -35,13 +35,11 @@ func getSession () *mgo.Session {
     cs := os.Getenv("SLACKVOTE_DB")
     var err error
     mgoSession, err = mgo.Dial(cs)
-    if err != nil {
-      panic(err) // no, not really
-    }
+    check(err)
   }
   return mgoSession.Clone()
 }
-func UpDownHandler(rw http.ResponseWriter, r *http.Request) {
+func VoteHandler(rw http.ResponseWriter, r *http.Request) {
   r.ParseMultipartForm(5120)
   isCmd := len(r.PostForm["command"]) > 0
   isTrg := len(r.PostForm["trigger_word"]) > 0
@@ -85,23 +83,17 @@ func UpDownHandler(rw http.ResponseWriter, r *http.Request) {
   text := fmt.Sprintf("'%s' has %v vote%s.", m.Id, m.Votes, sfx)
   if isCmd {
     rw.Write([]byte(text))
-  } else {
+  } else if isTrg {
     rw.Write([]byte(fmt.Sprintf("{\"text\":\"%s\"}", text)))
   }
 }
-func DownHandler(rw http.ResponseWriter, r *http.Request) {
-  rw.Write([]byte("WOO"))
-}
 func main () {
-  router := mux.NewRouter()
-  router.HandleFunc("/", UpDownHandler)
-  router.HandleFunc("/up", UpDownHandler)
-  router.HandleFunc("/down", UpDownHandler)
+  mux := http.NewServeMux()
+  mux.HandleFunc("/", VoteHandler)
 
   n := negroni.New(
     negroni.NewLogger(),
-    negroni.NewStatic(http.Dir("public")),
-    negroni.Wrap(router),
+    negroni.Wrap(mux),
   )
   n.Run(":"+os.Getenv("PORT"))
 }
