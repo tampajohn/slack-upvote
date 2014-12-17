@@ -42,10 +42,10 @@ func getSession () *mgo.Session {
   return mgoSession.Clone()
 }
 func UpDownHandler(rw http.ResponseWriter, r *http.Request) {
+  r.ParseMultipartForm(5120)
   isCmd := len(r.PostForm["command"]) > 0
   isTrg := len(r.PostForm["trigger_word"]) > 0
 
-  r.ParseMultipartForm(5120)
   for k,v := range r.PostForm {
     fmt.Printf("%s: %s ", k,v[0])
   }
