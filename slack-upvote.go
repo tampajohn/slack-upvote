@@ -4,19 +4,11 @@ import (
   "fmt"
   "github.com/codegangsta/negroni"
   "gopkg.in/mgo.v2"
+  "gopkg.in/mgo.v2/bson"
   "net/http"
   "os"
   "strings"
 )
-type Team struct {
-  Id string `bson:"_id"`
-  Domain string `bson:"domain"`
-  Father string `bson:"father"`
-}
-type Channel struct {
-  Id string `bson:"_id"`
-  Name string `bson:"name"`
-}
 type Mention struct {
   Id string `bson:"_id"`
   TeamId string `bson:"team_id"`
@@ -41,24 +33,41 @@ func getSession () *mgo.Session {
 }
 func VoteHandler(rw http.ResponseWriter, r *http.Request) {
   r.ParseMultipartForm(5120)
+  isValid := len(r.PostForm["text"]) > 0 && len(r.PostForm["team_id"]) > 0
+  if !isValid {
+    rw.Write([]byte("See ya homies"))
+    return
+  }
   isCmd := len(r.PostForm["command"]) > 0
   isTrg := len(r.PostForm["trigger_word"]) > 0
   db := getSession().DB("slack-upvote")
   mentionId := r.PostForm["text"][0]
+  teamId := r.PostForm["team_id"][0]
   sfx := ""
 
   if isTrg {
-    mentionId = strings.Trim(mentionId, r.PostForm["trigger_word"][0])
-  }
-  m := Mention{
-    Id: mentionId,
+    mentionId = strings.Trim(mentionId, r.PostForm["trigger_word"][0] + " ")
+    if mentionId == "" {
+      rw.Write([]byte(""))
+      return
+    }
   }
 
-  db.C("mentions").FindId(m.Id).One(&m)
+  m := Mention{
+    Id: mentionId,
+    TeamId: teamId,
+  }
+
+  db.C("mentions").Find(bson.M{"_id": m.Id, "team_id": m.TeamId}).One(&m)
 
   if isCmd {
     cmd := r.PostForm["command"][0]
-
+    switch cmd {
+      case "/up":
+        m.Votes++
+      case "/down":
+        m.Votes--
+    }
     if cmd == "/up" {
       m.Votes++
     } else if cmd == "/down" {
