@@ -94,6 +94,7 @@ func DownHandler(rw http.ResponseWriter, r *http.Request) {
 }
 func main () {
   router := mux.NewRouter()
+  router.HandleFunc("/", UpDownHandler)
   router.HandleFunc("/up", UpDownHandler)
   router.HandleFunc("/down", UpDownHandler)
 
