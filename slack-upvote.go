@@ -46,11 +46,13 @@ func VoteHandler(rw http.ResponseWriter, r *http.Request) {
   sfx := ""
 
   if isTrg {
-    mentionId = strings.Trim(strings.TrimLeft(mentionId, r.PostForm["trigger_word"][0]), " '\"")
-    if mentionId == "" {
-      rw.Write([]byte(""))
-      return
-    }
+    mentionId = strings.TrimLeft(mentionId, r.PostForm["trigger_word"][0])
+  }
+  mentionId = strings.Trim(mentionId, " '\"")
+
+  if mentionId == "" {
+    rw.Write([]byte(""))
+    return
   }
 
   m := Mention{
@@ -68,20 +70,13 @@ func VoteHandler(rw http.ResponseWriter, r *http.Request) {
       case "/down":
         m.Votes--
     }
-    if cmd == "/up" {
-      m.Votes++
-    } else if cmd == "/down" {
-      m.Votes--
-    } else {
-      rw.Write([]byte("Egad, how did you get here?!"))
-      return
-    }
   } else if isTrg {
     trg := r.PostForm["trigger_word"][0]
-    if trg == "+" {
-      m.Votes++
-    } else if trg == "-" {
-      m.Votes--
+    switch trg {
+      case "+":
+        m.Votes++
+      case "-":
+        m.Votes--
     }
   }
   db.C("mentions").UpsertId(m.Id, m)
