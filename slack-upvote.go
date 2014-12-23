@@ -17,20 +17,20 @@ type Mention struct {
 
 func VoteHandler(rw http.ResponseWriter, r *http.Request) {
   r.ParseMultipartForm(5120)
-  isValid := len(r.PostForm["text"]) > 0 && len(r.PostForm["team_id"]) > 0
+  isValid := len(r.Form["text"]) > 0 && len(r.Form["team_id"]) > 0
   if !isValid {
     rw.Write([]byte("See ya homies"))
     return
   }
-  isCmd := len(r.PostForm["command"]) > 0
-  isTrg := len(r.PostForm["trigger_word"]) > 0
+  isCmd := len(r.Form["command"]) > 0
+  isTrg := len(r.Form["trigger_word"]) > 0
   db := session.Get("SLACKVOTE_DB").DB("slack-upvote")
-  mentionId := r.PostForm["text"][0]
-  teamId := r.PostForm["team_id"][0]
+  mentionId := r.Form["text"][0]
+  teamId := r.Form["team_id"][0]
   sfx := ""
 
   if isTrg {
-    mentionId = strings.TrimLeft(mentionId, r.PostForm["trigger_word"][0])
+    mentionId = strings.TrimLeft(mentionId, r.Form["trigger_word"][0])
   }
   mentionId = strings.Trim(mentionId, " '\"")
 
@@ -40,14 +40,14 @@ func VoteHandler(rw http.ResponseWriter, r *http.Request) {
   }
 
   m := Mention{
-    Id: mentionId,
+    Id: strings.ToLower(mentionId),
     TeamId: teamId,
   }
 
   db.C("mentions").Find(bson.M{"_id": m.Id, "team_id": m.TeamId}).One(&m)
 
   if isCmd {
-    cmd := r.PostForm["command"][0]
+    cmd := r.Form["command"][0]
     switch cmd {
       case "/up":
         m.Votes++
@@ -55,7 +55,7 @@ func VoteHandler(rw http.ResponseWriter, r *http.Request) {
         m.Votes--
     }
   } else if isTrg {
-    trg := r.PostForm["trigger_word"][0]
+    trg := r.Form["trigger_word"][0]
     switch trg {
       case "+":
         m.Votes++
@@ -68,7 +68,7 @@ func VoteHandler(rw http.ResponseWriter, r *http.Request) {
   if m.Votes > 1 || m.Votes < -1 || m.Votes == 0 {
     sfx = "s"
   }
-  text := fmt.Sprintf("'%s' has %v vote%s.", m.Id, m.Votes, sfx)
+  text := fmt.Sprintf("'%s' has %v vote%s.", mentionId, m.Votes, sfx)
   if isCmd {
     rw.Write([]byte(text))
   } else if isTrg {
