@@ -89,7 +89,7 @@ func VoteHandler(rw http.ResponseWriter, r *http.Request) {
 		iter := db.C("mentions").Find(nil).Limit(10).Sort(sort).Iter()
 		var m Mention
 		for iter.Next(&m) {
-			b.WriteString(fmt.Sprintf("%v		%v", m.Votes, m.Id))
+			b.WriteString(fmt.Sprintf("%v %v", m.Votes, m.Id))
 		}
 		rw.Write([]byte(fmt.Sprintf("{\"text\":\"%s\", \"mkdown\":true}", b.String())))
 	}
