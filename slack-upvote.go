@@ -80,16 +80,16 @@ func VoteHandler(rw http.ResponseWriter, r *http.Request) {
 		var sort string
 		var sb bytes.Buffer
 		if isLeaderBoard {
-			sb.WriteString(fmt.Sprintf("*Leader Board*\\n________________\\n"))
+			sb.WriteString(fmt.Sprintf("*Leader Board*\\n\\n"))
 			sort = "-votes"
 		} else {
-			sb.WriteString(fmt.Sprintf("*Loser Board*\\n________________\\n"))
+			sb.WriteString(fmt.Sprintf("*Loser Board*\\n\\n"))
 			sort = "votes"
 		}
 		iter := db.C("mentions").Find(nil).Limit(10).Sort(sort).Iter()
 		var m Mention
 		for iter.Next(&m) {
-			sb.WriteString(fmt.Sprintf("*'%s'*\\t\\t*%v*\\n", m.Id, m.Votes))
+			sb.WriteString(fmt.Sprintf("*%v*\\t\\t*%s*\\n", m.Votes, m.Id))
 		}
 		rw.Write([]byte(fmt.Sprintf("{\"text\":\"%s\", \"mkdown\":true }", sb.String())))
 	}
