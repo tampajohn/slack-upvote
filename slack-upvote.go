@@ -82,21 +82,21 @@ func VoteHandler(rw http.ResponseWriter, r *http.Request) {
 		var sb bytes.Buffer
 		var fb bytes.Buffer
 		if isLeaderBoard {
-			sb.WriteString(fmt.Sprintf("Leader Board: "))
+			sb.WriteString(fmt.Sprintf("*Leader Board*\\n\\n"))
 			sort = "-votes"
 			title = "Leader Board"
 		} else {
-			sb.WriteString(fmt.Sprintf("Loser Board: "))
+			sb.WriteString(fmt.Sprintf("*Loser Board*\\n\\n"))
 			sort = "votes"
 			title = "Loser Board"
 		}
 		iter := db.C("mentions").Find(nil).Limit(10).Sort(sort).Iter()
 		var m Mention
 		for iter.Next(&m) {
-			sb.WriteString(fmt.Sprintf("[*'%s'* has a score of *%v*]\\n, ", m.Id, m.Votes))
+			sb.WriteString(fmt.Sprintf("*'%s'* has a score of *%v*\\n, ", m.Id, m.Votes))
 			fb.WriteString(fmt.Sprintf("'%s' has a score of %v\\n", m.Id, m.Votes))
 		}
-		rw.Write([]byte(fmt.Sprintf("{\"text\":\"%s\", \"mkdown\":true, \"attachments\":[{\"fallback\":\"%s\", \"fields\" : [{ \"title\":\"%s\", \"value\":\"%s\"}] }] }", sb.String(), sb.String(), title, fb.String())))
+		rw.Write([]byte(fmt.Sprintf("{\"text\":\"\", \"mkdown\":true, \"attachments\":[{\"fallback\":\"%s\", \"fields\" : [{ \"title\":\"%s\", \"value\":\"%s\"}] }] }", sb.String(), title, fb.String())))
 	}
 }
 func main() {
