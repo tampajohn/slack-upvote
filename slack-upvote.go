@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"bytes"
 )
 
 type Mention struct {
@@ -39,41 +40,58 @@ func VoteHandler(rw http.ResponseWriter, r *http.Request) {
 		rw.Write([]byte(""))
 		return
 	}
+	isLoserBoard := mentionId == "-"
+	isLeaderBoard := mentionId == "+"
 
-	m := Mention{
-		Id:     strings.ToLower(mentionId),
-		TeamId: teamId,
-	}
-
-	db.C("mentions").Find(bson.M{"_id": m.Id, "team_id": m.TeamId}).One(&m)
-
-	if isCmd {
-		cmd := r.Form["command"][0]
-		switch cmd {
-		case "/up":
-			m.Votes++
-		case "/down":
-			m.Votes--
+	if !isLeaderBoard && !isLoserBoard {
+		m := Mention{
+			Id:     strings.ToLower(mentionId),
+			TeamId: teamId,
 		}
-	} else if isTrg {
-		trg := r.Form["trigger_word"][0]
-		switch trg {
-		case "+":
-			m.Votes++
-		case "-":
-			m.Votes--
+		db.C("mentions").Find(bson.M{"_id": m.Id, "team_id": m.TeamId}).One(&m)
+		if isCmd {
+			cmd := r.Form["command"][0]
+			switch cmd {
+			case "/up":
+				m.Votes++
+			case "/down":
+				m.Votes--
+			}
+		} else if isTrg {
+			trg := r.Form["trigger_word"][0]
+			switch trg {
+			case "+":
+				m.Votes++
+			case "-":
+				m.Votes--
+			}
 		}
-	}
-	db.C("mentions").UpsertId(m.Id, m)
-
-	if m.Votes > 1 || m.Votes < -1 || m.Votes == 0 {
-		sfx = "s"
-	}
-	text := fmt.Sprintf("'%s' has %v vote%s.", mentionId, m.Votes, sfx)
-	if isCmd {
-		rw.Write([]byte(text))
-	} else if isTrg {
-		rw.Write([]byte(fmt.Sprintf("{\"text\":\"%s\"}", text)))
+		db.C("mentions").UpsertId(m.Id, m)
+		if m.Votes > 1 || m.Votes < -1 || m.Votes == 0 {
+			sfx = "s"
+		}
+		text := fmt.Sprintf("'%s' has %v vote%s.", mentionId, m.Votes, sfx)
+		if isCmd {
+			rw.Write([]byte(text))
+		} else if isTrg {
+			rw.Write([]byte(fmt.Sprintf("{\"text\":\"%s\"}", text)))
+		}
+	} else {
+		var sort string
+		var b bytes.Buffer
+		if isLeaderBoard {
+			b.WriteString(fmt.Sprintf("Leader Board\n____________________________\n\n"))
+			sort = "-votes"
+		} else {
+			b.WriteString(fmt.Sprintf("Loser Board\n____________________________\n\n"))
+			sort = "votes"
+		}
+		iter := db.C("mentions").Find(nil).Limit(10).Sort(sort).Iter()
+		var m Mention
+		for iter.Next(&m) {
+			b.WriteString(fmt.Sprintf("%v		%v\n", m.Votes, m.Id))
+		}
+		rw.Write([]byte(fmt.Sprintf("{\"text\":\"%s\"}", b.String())))
 	}
 }
 func main() {
