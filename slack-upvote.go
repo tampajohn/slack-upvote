@@ -96,7 +96,7 @@ func VoteHandler(rw http.ResponseWriter, r *http.Request) {
 			sb.WriteString(fmt.Sprintf("[*'%s'* has a score of *%v*], ", m.Id, m.Votes))
 			fb.WriteString(fmt.Sprintf("*'%s'* has a score of *%v*\n", m.Id, m.Votes))
 		}
-		rw.Write([]byte(fmt.Sprintf("{\"text\":\"%s\", \"mkdown\":true, \"attachments\":[{\"fallback\":\"%s\", \"fields\" : [{ \"title\":\"%s\",\"text\":\"%s\"}]}]}", sb.String(), sb.String(), title, fb.String())))
+		rw.Write([]byte(fmt.Sprintf("{\"text\":\"%s\", \"mkdown\":true, \"attachments\":[{\"fallback\":\"%s\", \"fields\" : [{ \"title\":\"%s\",\"value\":\"%s\"}]}]}", sb.String(), sb.String(), title, fb.String())))
 	}
 }
 func main() {
