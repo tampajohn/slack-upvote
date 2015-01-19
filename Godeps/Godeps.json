@@ -1,19 +1,19 @@
 {
-	"ImportPath": "bitbucket.org/tampajohn/slack-upvote",
-	"GoVersion": "go1.2.2",
+	"ImportPath": "github.com/jqatampa/slack-upvote",
+	"GoVersion": "go1.3.3",
 	"Deps": [
-		{
-			"ImportPath": "bitbucket.org/tampajohn/gadget-arm/errors",
-			"Rev": "c8f8e6a1053b6f8c5d22b8a79e410934e3ee95d6"
-		},
-		{
-			"ImportPath": "bitbucket.org/tampajohn/gadget-arm/session",
-			"Rev": "c8f8e6a1053b6f8c5d22b8a79e410934e3ee95d6"
-		},
 		{
 			"ImportPath": "github.com/codegangsta/negroni",
 			"Comment": "v0.1-53-g0366a6e",
 			"Rev": "0366a6e5c8c7d1f63c9e11d8b688aea387f08b96"
+		},
+		{
+			"ImportPath": "github.com/jqatampa/gadget-arm/errors",
+			"Rev": "d57f669ab926c61ca06360eb7ff98ffe693d2341"
+		},
+		{
+			"ImportPath": "github.com/jqatampa/gadget-arm/session",
+			"Rev": "d57f669ab926c61ca06360eb7ff98ffe693d2341"
 		},
 		{
 			"ImportPath": "gopkg.in/mgo.v2",

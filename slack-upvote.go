@@ -1,14 +1,15 @@
 package main
 
 import (
-	"bitbucket.org/tampajohn/gadget-arm/session"
+	"bytes"
 	"fmt"
-	"github.com/codegangsta/negroni"
-	"gopkg.in/mgo.v2/bson"
 	"net/http"
 	"os"
 	"strings"
-	"bytes"
+
+	"github.com/codegangsta/negroni"
+	"github.com/jqatampa/gadget-arm/session"
+	"gopkg.in/mgo.v2/bson"
 )
 
 type Mention struct {

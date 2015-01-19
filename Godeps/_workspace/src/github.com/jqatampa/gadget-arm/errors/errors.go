@@ -1,7 +1,7 @@
 package errors
 
 func Check(err error) {
-  if err != nil {
-    panic(err)
-  }
+	if err != nil {
+		panic(err)
+	}
 }
