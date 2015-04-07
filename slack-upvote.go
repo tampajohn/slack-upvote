@@ -87,7 +87,7 @@ func VoteHandler(rw http.ResponseWriter, r *http.Request) {
 			sb.WriteString(fmt.Sprintf("*Loser Board*\\n\\n"))
 			sort = "votes"
 		}
-		iter := db.C("mentions").Find(nil).Limit(10).Sort(sort).Iter()
+		iter := db.C("mentions").Find(bson.M{"team_id": teamId}).Limit(10).Sort(sort).Iter()
 		var m Mention
 		for iter.Next(&m) {
 			sb.WriteString(fmt.Sprintf("*%v*\\t\\t*%s*\\n", m.Votes, m.Id))
