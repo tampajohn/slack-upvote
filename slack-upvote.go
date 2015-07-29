@@ -92,7 +92,9 @@ func VoteHandler(rw http.ResponseWriter, r *http.Request) {
 		for iter.Next(&m) {
 			sb.WriteString(fmt.Sprintf("*%v*\\t\\t*%s*\\n", m.Votes, m.Id))
 		}
-		rw.Write([]byte(fmt.Sprintf("{\"text\":\"%s\", \"mkdown\":true, \"username\":\"Voting\", \"icon_emoji\":\":thumbsdown:\" }", sb.String())))
+		responseText := fmt.Sprintf("{\"text\":\"%s\", \"mkdown\":true, \"username\":\"Voting\", \"icon_emoji\":\":thumbsdown:\" }", sb.String())
+		fmt.Println(responseText)
+		rw.Write([]byte(responseText))
 	}
 }
 func main() {
